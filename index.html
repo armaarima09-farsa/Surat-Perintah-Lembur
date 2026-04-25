@@ -784,28 +784,18 @@ function saveAs(blob, filename) {
           </div>
           <div class="form-group">
             <label>NID <span class="required">*</span></label>
-            <input type="text" id="nid" placeholder="Nomor Induk Dosen/Karyawan">
+            <input type="text" id="nid" placeholder="Nomor Induk Pegawai">
           </div>
           <div class="form-group">
             <label>Jabatan <span class="required">*</span></label>
             <select id="jabatan">
               <option value="">— Pilih Jabatan —</option>
-              <optgroup label="Tenaga Pendidik">
-                <option>Guru / Dosen</option>
-                <option>Kepala Sekolah</option>
-                <option>Wakil Kepala Sekolah</option>
-              </optgroup>
-              <optgroup label="Tenaga Kependidikan">
-                <option>Staf Administrasi</option>
-                <option>Staf Keuangan</option>
-                <option>Staf IT</option>
-                <option>Staf Perpustakaan</option>
-                <option>Staf Laboratorium</option>
-                <option>Staf Keamanan</option>
-                <option>Staf Kebersihan</option>
-                <option>Operator Sekolah</option>
-              </optgroup>
-              <option value="__lainnya__">Lainnya...</option>
+              <option value="KC">KC</option>
+              <option value="GURU">GURU</option>
+              <option value="QC">QC</option>
+              <option value="BIKON">BIKON</option>
+              <option value="FL">FL</option>
+              <option value="OB">OB</option>
             </select>
           </div>
           <div class="form-group" id="jabatanLainnyaGroup" style="display:none">
