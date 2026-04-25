@@ -23987,7 +23987,16 @@ function saveAs(blob, filename) {
           </div>
           <div class="form-group">
             <label>Nama Kepala Cabang (Penandatangan) <span class="required">*</span></label>
-            <input type="text" id="namaKepala" placeholder="Nama yang menandatangani...">
+            <select id="namaKepalaSelect" onchange="handleKepalaChange()">
+              <option value="">— Pilih Nama —</option>
+              <option value="Farsa Septia Adi Nugroho">Farsa Septia Adi Nugroho</option>
+              <option value="Rudi Ratya Handika">Rudi Ratya Handika</option>
+              <option value="__lainnya__">Lainnya...</option>
+            </select>
+          </div>
+          <div class="form-group" id="namaKepalaLainnyaGroup" style="display:none">
+            <label>Tulis Nama Kepala Cabang <span class="required">*</span></label>
+            <input type="text" id="namaKepalaLainnya" placeholder="Ketik nama lengkap...">
           </div>
         </div>
 
@@ -24211,6 +24220,15 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+function handleKepalaChange() {
+  const sel = document.getElementById('namaKepalaSelect').value;
+  const grp = document.getElementById('namaKepalaLainnyaGroup');
+  grp.style.display = sel === '__lainnya__' ? '' : 'none';
+  if (sel !== '__lainnya__') {
+    document.getElementById('namaKepalaLainnya').value = '';
+  }
+}
+
 function populateDateDropdown(id, max) {
   const sel = document.getElementById(id);
   sel.innerHTML = '<option value="">Tgl</option>';
@@ -24334,7 +24352,10 @@ function submitForm() {
   const tglSurat = document.getElementById('tglSurat').value;
   const bulanSurat = document.getElementById('bulanSurat').value;
   const tahunSurat = document.getElementById('tahunSurat').value;
-  const namaKepala = document.getElementById('namaKepala').value.trim();
+  const namaKepalaSelVal = document.getElementById('namaKepalaSelect').value;
+  const namaKepala = namaKepalaSelVal === '__lainnya__'
+    ? document.getElementById('namaKepalaLainnya').value.trim()
+    : namaKepalaSelVal;
 
   const periodeAwalBulan = document.getElementById('periodeAwalBulan').value;
   const periodeAwalTahun = document.getElementById('periodeAwalTahun').value;
@@ -24378,7 +24399,9 @@ function resetForm() {
   document.getElementById('jabatan').value = '';
   document.getElementById('jabatanLainnya').value = '';
   document.getElementById('jabatanLainnyaGroup').style.display = 'none';
-  document.getElementById('namaKepala').value = '';
+  document.getElementById('namaKepalaSelect').value = '';
+  document.getElementById('namaKepalaLainnya').value = '';
+  document.getElementById('namaKepalaLainnyaGroup').style.display = 'none';
   document.getElementById('lemburBody').innerHTML = '';
   rowCount = 0;
   addRow();
