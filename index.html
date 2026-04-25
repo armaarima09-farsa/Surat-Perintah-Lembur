@@ -23757,6 +23757,53 @@ function saveAs(blob, filename) {
     border-radius: 20px;
     border: 1px solid var(--border);
   }
+
+  /* ===== PEGAWAI VIEW ===== */
+  .pegawai-card {
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(26,92,56,0.08);
+    border: 1.5px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 16px;
+    transition: box-shadow 0.2s;
+  }
+  .pegawai-card:hover { box-shadow: 0 4px 20px rgba(26,92,56,0.13); }
+
+  .pegawai-card-header {
+    background: linear-gradient(135deg, var(--green-light) 0%, #d0ead9 100%);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    border-bottom: 1.5px solid var(--border);
+  }
+
+  .pegawai-card-info h3 { font-size: 1rem; font-weight: 700; color: var(--green); }
+  .pegawai-card-meta {
+    font-size: 0.75rem;
+    color: var(--text-soft);
+    margin-top: 4px;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .pegawai-card-body { padding: 16px 20px; }
+
+  .no-result-hint {
+    background: var(--gold-light);
+    border: 1.5px solid #e8d09a;
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 0.83rem;
+    color: #7a5a00;
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+  }
 </style>
 </head>
 <body>
@@ -23780,6 +23827,9 @@ function saveAs(blob, filename) {
   <div class="tabs-inner">
     <button class="tab-btn active" id="tab-form" onclick="switchTab('form')">
       ✏️ Isi Formulir
+    </button>
+    <button class="tab-btn" id="tab-pegawai" onclick="switchTab('pegawai')">
+      📂 Lihat Data Saya
     </button>
     <button class="tab-btn" id="tab-admin" onclick="switchTab('admin')" style="display:none">
       📊 Data Masuk <span class="count-badge" id="countBadge">0</span>
@@ -23951,6 +24001,38 @@ function saveAs(blob, filename) {
     </div>
   </div>
 
+  <!-- ===== PEGAWAI VIEW PANEL ===== -->
+  <div class="panel" id="panel-pegawai">
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header">
+        <div class="card-header-icon">🔍</div>
+        <div class="card-header-text">
+          <h2>Cari Data Lembur Saya</h2>
+          <p>Masukkan nama atau NID untuk menemukan dan mengunduh surat lembur Anda.</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Cari berdasarkan Nama</label>
+            <input type="text" id="pegawaiSearchName" placeholder="Ketik nama pegawai..." oninput="renderPegawaiView()">
+          </div>
+          <div class="form-group">
+            <label>Atau NID</label>
+            <input type="text" id="pegawaiSearchNid" placeholder="Ketik NID..." oninput="renderPegawaiView()">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="pegawaiResults">
+      <div class="empty-state">
+        <div class="empty-icon">🔎</div>
+        <h3>Ketik nama atau NID di atas</h3>
+        <p>Data lembur Anda akan muncul di sini.</p>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== ADMIN PANEL ===== -->
   <div class="panel" id="panel-admin">
 
@@ -24021,6 +24103,86 @@ function switchTab(tab) {
   document.getElementById('panel-' + tab).classList.add('active');
   document.getElementById('tab-' + tab).classList.add('active');
   if (tab === 'admin') renderSubmissions();
+  if (tab === 'pegawai') renderPegawaiView();
+}
+
+// ===================== PEGAWAI VIEW =====================
+function renderPegawaiView() {
+  const name = document.getElementById('pegawaiSearchName').value.trim().toLowerCase();
+  const nid  = document.getElementById('pegawaiSearchNid').value.trim().toLowerCase();
+  const container = document.getElementById('pegawaiResults');
+
+  if (!name && !nid) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">🔎</div>
+      <h3>Ketik nama atau NID di atas</h3>
+      <p>Data lembur Anda akan muncul di sini.</p>
+    </div>`;
+    return;
+  }
+
+  const all = getSubmissions();
+  const found = all.filter(s => {
+    const matchName = name && s.nama.toLowerCase().includes(name);
+    const matchNid  = nid  && s.nid.toLowerCase().includes(nid);
+    return matchName || matchNid;
+  });
+
+  if (found.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <h3>Data tidak ditemukan</h3>
+        <p>Pastikan nama atau NID yang Anda ketik sudah benar.</p>
+      </div>
+      <div class="no-result-hint">
+        💡 Jika Anda belum mengisi formulir, silakan klik tab <strong>Isi Formulir</strong> terlebih dahulu.
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = found.map(s => {
+    const dt = new Date(s.timestamp);
+    const dtStr = dt.toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    return `
+    <div class="pegawai-card">
+      <div class="pegawai-card-header">
+        <div class="pegawai-card-info">
+          <h3>📋 Surat Lembur — ${escHtml(s.tanggalSurat)}</h3>
+          <div class="pegawai-card-meta">
+            <span>👤 ${escHtml(s.nama)}</span>
+            <span>🪪 NID: ${escHtml(s.nid)}</span>
+            <span>💼 ${escHtml(s.jabatan)}</span>
+            <span>🕒 Dikirim: ${dtStr}</span>
+          </div>
+          <div style="margin-top:6px">
+            <span class="period-display">Periode: ${escHtml(s.periode)}</span>
+          </div>
+        </div>
+        <button class="btn-download" onclick="downloadDoc('${s.id}')">
+          ⬇️ Unduh .docx
+        </button>
+      </div>
+      <div class="pegawai-card-body">
+        <table class="mini-table">
+          <thead>
+            <tr>
+              <th>No</th><th>Tanggal</th><th>Jumlah Jam</th><th>Waktu</th><th>Keperluan</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${s.rows.map(r => `<tr>
+              <td>${r.no}</td>
+              <td>${escHtml(r.tanggal)}</td>
+              <td>${escHtml(r.jamLembur)}</td>
+              <td>${escHtml(r.waktu)}</td>
+              <td>${escHtml(r.keperluan)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function toggleAdmin() {
