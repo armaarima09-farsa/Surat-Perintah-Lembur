@@ -5,8 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Surat Perintah Lembur — April 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script src="https://unpkg.com/docx@7.8.2/build/index.umd.js"></script>
+<script>
+// Polyfill saveAs jika FileSaver tidak tersedia
+function saveAs(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 300);
+}
+</script>
 <style>
   :root {
     --green: #1a5c38;
@@ -1271,11 +1282,14 @@ async function downloadAllDocs() {
 }
 
 async function generateDocx(s) {
+  try {
+  const docxLib = window.docx;
+  if (!docxLib) { toast('Library docx belum termuat. Refresh halaman dan coba lagi.','error'); return; }
   const {
     Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
     AlignmentType, WidthType, BorderStyle, ShadingType, VerticalAlign,
     PageOrientation
-  } = docx;
+  } = docxLib;
 
   const border = { style: BorderStyle.SINGLE, size: 6, color: '1a5c38' };
   const borderThin = { style: BorderStyle.SINGLE, size: 4, color: '888888' };
@@ -1497,7 +1511,11 @@ async function generateDocx(s) {
   const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
   const safeName = s.nama.replace(/[^a-zA-Z0-9\s]/g,'').replace(/\s+/g,'_');
   saveAs(blob, `SPL_${safeName}_${s.tanggalSurat.replace(/\s/g,'-')}.docx`);
-  toast(`✅ Dokumen ${s.nama} berhasil diunduh!`,'success');
+  toast('✅ Dokumen ' + s.nama + ' berhasil diunduh!','success');
+  } catch(err) {
+    console.error('Error generateDocx:', err);
+    toast('Gagal membuat dokumen: ' + err.message, 'error');
+  }
 }
 
 // ===================== UTILS =====================
