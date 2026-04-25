@@ -24575,8 +24575,7 @@ async function generateDocx(s) {
     }]
   });
 
-  const buffer = await Packer.toBuffer(doc);
-  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+  const blob = await Packer.toBlob(doc);
   const safeName = s.nama.replace(/[^a-zA-Z0-9\s]/g,'').replace(/\s+/g,'_');
   saveAs(blob, `SPL_${safeName}_${s.tanggalSurat.replace(/\s/g,'-')}.docx`);
   toast('✅ Dokumen ' + s.nama + ' berhasil diunduh!','success');
