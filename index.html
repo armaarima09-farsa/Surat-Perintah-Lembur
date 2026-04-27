@@ -24145,21 +24145,115 @@ function saveAs(blob, filename) {
 
 </div>
 
+
+<!-- ===== FIREBASE SDK ===== -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// =====================================================================
+// 🔧 KONFIGURASI FIREBASE — ISI DENGAN DATA PROJECT FIREBASE ANDA
+// Cara mendapatkan: https://console.firebase.google.com
+//   1. Buat project baru (gratis)
+//   2. Klik ⚙️ Project Settings → General → Your Apps → Add app (Web)
+//   3. Copy nilai di bawah ini dari konfigurasi yang diberikan Firebase
+// =====================================================================
+const firebaseConfig = {
+  apiKey:            "AIzaSy...(nilai apiKey Anda)",
+  authDomain:        "nama-project.firebaseapp.com",
+  projectId:         "nama-project",
+  storageBucket:     "nama-project.appspot.com",
+  messagingSenderId: "123456789",
+  appId:             "1:123:web:abc"
+};
+// =====================================================================
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const COL = "lemburSubmissions";
+
+// Expose ke global scope agar fungsi non-module bisa mengakses
+window._db  = db;
+window._fbCollection = collection;
+window._fbAddDoc     = addDoc;
+window._fbGetDocs    = getDocs;
+window._fbDeleteDoc  = deleteDoc;
+window._fbDoc        = doc;
+window._fbQuery      = query;
+window._fbOrderBy    = orderBy;
+window._fbOnSnapshot = onSnapshot;
+window._COL          = COL;
+window._firebaseReady = true;
+
+// Mulai real-time listener setelah DOM siap
+document.addEventListener('DOMContentLoaded', () => {
+  startRealtimeListener();
+});
+
+function startRealtimeListener() {
+  const q = query(collection(db, COL), orderBy("timestamp", "desc"));
+  onSnapshot(q, (snapshot) => {
+    const submissions = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    window._cachedSubmissions = submissions;
+    updateCount();
+    // Refresh tampilan jika panel admin sedang aktif
+    const adminContent = document.getElementById('adminContent');
+    if (adminContent && adminContent.style.display !== 'none') {
+      renderSubmissions();
+    }
+    // Refresh tampilan pegawai jika panel aktif
+    const pegawaiPanel = document.getElementById('panel-pegawai');
+    if (pegawaiPanel && pegawaiPanel.classList.contains('active')) {
+      renderPegawaiView();
+    }
+  }, (err) => {
+    console.error("Firestore listener error:", err);
+    if (err.code === 'permission-denied') {
+      showFirebaseError('Akses ditolak. Pastikan Firestore Rules sudah diatur dengan benar.');
+    }
+  });
+}
+</script>
+
 <script>
-// ===================== STORAGE =====================
-const STORAGE_KEY = 'lemburSubmissions_v2';
-const ADMIN_PASS  = 'admin123'; // Ganti kata sandi di sini
+// =====================================================================
+// KONFIGURASI ADMIN
+// =====================================================================
+const ADMIN_PASS = 'admin123'; // Ganti kata sandi admin di sini
 let adminLoggedIn = false;
 
+// Cache data dari Firestore (diisi oleh realtime listener)
+window._cachedSubmissions = [];
+
+// =====================================================================
+// STORAGE — Baca/tulis ke Firestore (async)
+// =====================================================================
 function getSubmissions() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
+  return window._cachedSubmissions || [];
 }
 
-function saveSubmissions(arr) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+async function addSubmission(data) {
+  if (!window._firebaseReady) throw new Error('Firebase belum siap.');
+  const ref = window._fbCollection(window._db, window._COL);
+  await window._fbAddDoc(ref, data);
 }
 
-// ===================== TABS =====================
+async function removeSubmission(id) {
+  if (!window._firebaseReady) throw new Error('Firebase belum siap.');
+  const ref = window._fbDoc(window._db, window._COL, id);
+  await window._fbDeleteDoc(ref);
+}
+
+async function removeAllSubmissions() {
+  const all = getSubmissions();
+  for (const s of all) {
+    await removeSubmission(s.id);
+  }
+}
+
+// =====================================================================
+// TABS
+// =====================================================================
 function switchTab(tab) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -24169,7 +24263,9 @@ function switchTab(tab) {
   if (tab === 'pegawai') renderPegawaiView();
 }
 
-// ===================== PEGAWAI VIEW =====================
+// =====================================================================
+// PEGAWAI VIEW
+// =====================================================================
 function renderPegawaiView() {
   const name = document.getElementById('pegawaiSearchName').value.trim().toLowerCase();
   const nid  = document.getElementById('pegawaiSearchNid').value.trim().toLowerCase();
@@ -24248,6 +24344,9 @@ function renderPegawaiView() {
   }).join('');
 }
 
+// =====================================================================
+// TOGGLE ADMIN
+// =====================================================================
 function toggleAdmin() {
   const adminTab = document.getElementById('tab-admin');
   if (adminTab.style.display === 'none') {
@@ -24261,7 +24360,17 @@ function toggleAdmin() {
   }
 }
 
-// ===================== INIT =====================
+// =====================================================================
+// FIREBASE ERROR DISPLAY
+// =====================================================================
+function showFirebaseError(msg) {
+  const box = document.getElementById('firebaseErrorBox');
+  if (box) { box.textContent = '⚠️ ' + msg; box.style.display = ''; }
+}
+
+// =====================================================================
+// INIT
+// =====================================================================
 window.addEventListener('DOMContentLoaded', () => {
   populateDateDropdown('tglSurat', 31);
   addRow();
@@ -24295,20 +24404,19 @@ function populateDateDropdown(id, max) {
   }
 }
 
-function updatePeriodeDisplay() {
-  // auto sync akhir bulan defaults
-}
+function updatePeriodeDisplay() {}
 
-// ===================== ROWS =====================
+// =====================================================================
+// ROWS
+// =====================================================================
 let rowCount = 0;
 
 const BULAN = ['Januari','Februari','Maret','April','Mei','Juni',
                'Juli','Agustus','September','Oktober','November','Desember'];
-const TAHUN = Array.from({length: 21}, (_, i) => String(2026 + i)); // 2026–2046
+const TAHUN = Array.from({length: 21}, (_, i) => String(2026 + i));
 
-function bulanOptions(sel) {
-  return BULAN.map((b,i) =>
-    `<option value="${b}" ${b==='April'?'selected':''}>${b}</option>`).join('');
+function bulanOptions() {
+  return BULAN.map(b => `<option value="${b}" ${b==='April'?'selected':''}>${b}</option>`).join('');
 }
 
 function tglOptions() {
@@ -24354,15 +24462,11 @@ function addRow() {
 
 function delRow(id) {
   const el = document.getElementById(id);
-  if (el) {
-    el.remove();
-    renumberRows();
-  }
+  if (el) { el.remove(); renumberRows(); }
 }
 
 function renumberRows() {
-  const rows = document.querySelectorAll('#lemburBody tr');
-  rows.forEach((r, i) => {
+  document.querySelectorAll('#lemburBody tr').forEach((r, i) => {
     r.querySelector('td:first-child').textContent = i + 1;
   });
 }
@@ -24379,31 +24483,37 @@ function getRows() {
     const jam = cells[2].querySelector('input').value;
     const times = cells[3].querySelectorAll('input');
     const dari = times[0].value;
-    const sdBln = times[1].value;
+    const sdVal = times[1].value;
     const keperluan = cells[4].querySelector('input').value;
-
     if (tgl || jam || keperluan) {
       result.push({
         no: i + 1,
         tanggal: tgl ? `${tgl} ${bln} ${thn}` : '',
         jamLembur: jam ? `${jam.replace(',','.')} jam` : '',
-        waktu: dari && sdBln ? `${dari} s/d ${sdBln}` : (dari || ''),
-        keperluan: keperluan
+        waktu: dari && sdVal ? `${dari} s/d ${sdVal}` : (dari || ''),
+        keperluan
       });
     }
   });
   return result;
 }
 
-// ===================== SUBMIT =====================
-function submitForm() {
+// =====================================================================
+// SUBMIT — simpan ke Firestore
+// =====================================================================
+async function submitForm() {
+  if (!window._firebaseReady) {
+    toast('Firebase belum siap. Refresh halaman atau periksa konfigurasi.', 'error');
+    return;
+  }
+
   const nama = document.getElementById('namaPegawai').value.trim();
   const nid  = document.getElementById('nid').value.trim();
   const jabatanSel = document.getElementById('jabatan').value;
   const jabatan = jabatanSel === '__lainnya__'
     ? document.getElementById('jabatanLainnya').value.trim()
     : jabatanSel;
-  const tglSurat = document.getElementById('tglSurat').value;
+  const tglSurat   = document.getElementById('tglSurat').value;
   const bulanSurat = document.getElementById('bulanSurat').value;
   const tahunSurat = document.getElementById('tahunSurat').value;
   const namaKepalaSelVal = document.getElementById('namaKepalaSelect').value;
@@ -24411,40 +24521,48 @@ function submitForm() {
     ? document.getElementById('namaKepalaLainnya').value.trim()
     : namaKepalaSelVal;
 
-  const periodeAwalBulan = document.getElementById('periodeAwalBulan').value;
-  const periodeAwalTahun = document.getElementById('periodeAwalTahun').value;
+  const periodeAwalBulan  = document.getElementById('periodeAwalBulan').value;
+  const periodeAwalTahun  = document.getElementById('periodeAwalTahun').value;
   const periodeAkhirBulan = document.getElementById('periodeAkhirBulan').value;
   const periodeAkhirTahun = document.getElementById('periodeAkhirTahun').value;
 
   const rows = getRows();
 
-  // Validation
-  if (!nama) { toast('Nama pegawai wajib diisi!','error'); return; }
-  if (!nid)  { toast('NID wajib diisi!','error'); return; }
-  if (!jabatan) { toast('Jabatan wajib dipilih!','error'); return; }
+  if (!nama)     { toast('Nama pegawai wajib diisi!','error'); return; }
+  if (!nid)      { toast('NID wajib diisi!','error'); return; }
+  if (!jabatan)  { toast('Jabatan wajib dipilih!','error'); return; }
   if (!tglSurat) { toast('Tanggal surat wajib diisi!','error'); return; }
   if (!namaKepala) { toast('Nama kepala cabang wajib diisi!','error'); return; }
   if (rows.length === 0) { toast('Minimal 1 baris data lembur harus diisi!','error'); return; }
   if (rows.some(r => !r.tanggal)) { toast('Tanggal pada setiap baris harus dipilih!','error'); return; }
 
-  const submission = {
-    id: Date.now().toString(),
-    timestamp: new Date().toISOString(),
-    nama, nid, jabatan,
-    periode: `26 ${periodeAwalBulan} ${periodeAwalTahun} – 25 ${periodeAkhirBulan} ${periodeAkhirTahun}`,
-    tanggalSurat: `${tglSurat} ${bulanSurat} ${tahunSurat}`,
-    bulanSurat,
-    namaKepala,
-    rows
-  };
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="spinner"></span> Menyimpan...';
 
-  const all = getSubmissions();
-  all.unshift(submission);
-  saveSubmissions(all);
-  updateCount();
-
-  toast('✅ Data berhasil dikirim! Admin dapat mengunduh dokumen.', 'success');
-  resetForm();
+  try {
+    await addSubmission({
+      timestamp: new Date().toISOString(),
+      nama, nid, jabatan,
+      periode: `26 ${periodeAwalBulan} ${periodeAwalTahun} – 25 ${periodeAkhirBulan} ${periodeAkhirTahun}`,
+      tanggalSurat: `${tglSurat} ${bulanSurat} ${tahunSurat}`,
+      bulanSurat,
+      namaKepala,
+      rows
+    });
+    toast('✅ Data berhasil dikirim! Admin dapat melihat dan mengunduh dokumen.', 'success');
+    resetForm();
+  } catch (err) {
+    console.error('Submit error:', err);
+    if (err.message && err.message.includes('GANTI_DENGAN')) {
+      toast('⚠️ Firebase belum dikonfigurasi. Ikuti panduan pengaturan di bawah.', 'error');
+    } else {
+      toast('Gagal menyimpan data: ' + err.message, 'error');
+    }
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '📤 Kirim Data';
+  }
 }
 
 function resetForm() {
@@ -24462,7 +24580,9 @@ function resetForm() {
   toast('Form direset.','warning');
 }
 
-// ===================== ADMIN =====================
+// =====================================================================
+// ADMIN LOGIN
+// =====================================================================
 function checkAdmin() {
   const pwd = document.getElementById('adminPwd').value;
   if (pwd === ADMIN_PASS) {
@@ -24481,13 +24601,16 @@ function updateCount() {
   document.getElementById('countBadge').textContent = n;
 }
 
+// =====================================================================
+// RENDER ADMIN TABLE
+// =====================================================================
 function renderSubmissions() {
   const all = getSubmissions();
-  const filterName = document.getElementById('filterName').value.toLowerCase();
+  const filterName  = document.getElementById('filterName').value.toLowerCase();
   const filterBulan = document.getElementById('filterBulan').value;
 
   const filtered = all.filter(s => {
-    const matchName = !filterName || s.nama.toLowerCase().includes(filterName);
+    const matchName  = !filterName  || s.nama.toLowerCase().includes(filterName);
     const matchBulan = !filterBulan || s.bulanSurat === filterBulan;
     return matchName && matchBulan;
   });
@@ -24532,11 +24655,7 @@ function renderSubmissions() {
         <table class="mini-table">
           <thead>
             <tr>
-              <th>No</th>
-              <th>Tanggal</th>
-              <th>Jumlah Jam</th>
-              <th>Waktu</th>
-              <th>Keperluan</th>
+              <th>No</th><th>Tanggal</th><th>Jumlah Jam</th><th>Waktu</th><th>Keperluan</th>
             </tr>
           </thead>
           <tbody>
@@ -24554,24 +24673,32 @@ function renderSubmissions() {
   }).join('');
 }
 
-function deleteSubmission(id) {
+// =====================================================================
+// DELETE
+// =====================================================================
+async function deleteSubmission(id) {
   if (!confirm('Hapus data ini?')) return;
-  const all = getSubmissions().filter(s => s.id !== id);
-  saveSubmissions(all);
-  updateCount();
-  renderSubmissions();
-  toast('Data dihapus.','warning');
+  try {
+    await removeSubmission(id);
+    toast('Data dihapus.','warning');
+  } catch(err) {
+    toast('Gagal menghapus: ' + err.message,'error');
+  }
 }
 
-function clearAll() {
+async function clearAll() {
   if (!confirm('Hapus SEMUA data lembur? Tindakan ini tidak dapat dibatalkan!')) return;
-  saveSubmissions([]);
-  updateCount();
-  renderSubmissions();
-  toast('Semua data dihapus.','warning');
+  try {
+    await removeAllSubmissions();
+    toast('Semua data dihapus.','warning');
+  } catch(err) {
+    toast('Gagal menghapus semua data: ' + err.message,'error');
+  }
 }
 
-// ===================== DOCX GENERATION =====================
+// =====================================================================
+// DOCX DOWNLOAD
+// =====================================================================
 async function downloadDoc(id) {
   const s = getSubmissions().find(x => x.id === id);
   if (!s) { toast('Data tidak ditemukan!','error'); return; }
@@ -24824,7 +24951,9 @@ async function generateDocx(s) {
   }
 }
 
-// ===================== UTILS =====================
+// =====================================================================
+// UTILS
+// =====================================================================
 function escHtml(str) {
   return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
@@ -24838,5 +24967,34 @@ function toast(msg, type = 'success') {
   setTimeout(() => t.remove(), 3800);
 }
 </script>
+
+<!-- ===== PANDUAN SETUP FIREBASE ===== -->
+<div id="firebaseSetupGuide" style="
+  max-width:860px; margin:32px auto; padding:28px 32px;
+  background:#fffbea; border:2px solid #e8d09a; border-radius:16px;
+  font-family:inherit; font-size:0.85rem; color:#5a4000; line-height:1.7;
+">
+  <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:12px;color:#7a5a00">
+    🔧 Panduan Setup Firebase (Baca sebelum digunakan!)
+  </h2>
+  <div id="firebaseErrorBox" style="display:none; background:#fdecea; border:1.5px solid #f5c6c6; border-radius:8px; padding:10px 14px; margin-bottom:14px; color:#c0392b; font-weight:600;"></div>
+  <p><strong>Langkah-langkah untuk mengaktifkan penyimpanan cloud:</strong></p>
+  <ol style="padding-left:20px; margin:12px 0;">
+    <li style="margin-bottom:8px">Buka <a href="https://console.firebase.google.com" target="_blank" style="color:#1a5c38;font-weight:600">console.firebase.google.com</a> → Login dengan akun Google</li>
+    <li style="margin-bottom:8px">Klik <strong>+ Add project</strong> → Beri nama (misal: <em>surat-lembur</em>) → Buat project</li>
+    <li style="margin-bottom:8px">Di sidebar kiri, klik <strong>Build → Firestore Database</strong> → Klik <strong>Create database</strong> → Pilih <strong>Start in test mode</strong> → Pilih lokasi server (pilih <em>asia-southeast1</em>) → Done</li>
+    <li style="margin-bottom:8px">Kembali ke halaman utama project → Klik ikon <strong>&lt;/&gt; (Web)</strong> untuk menambahkan aplikasi web → Isi nama app → Klik <strong>Register app</strong></li>
+    <li style="margin-bottom:8px">Salin nilai <code>apiKey</code>, <code>authDomain</code>, <code>projectId</code>, <code>storageBucket</code>, <code>messagingSenderId</code>, <code>appId</code> dari konfigurasi yang ditampilkan</li>
+    <li style="margin-bottom:8px">Buka file <strong>index.html</strong> ini di editor teks (Notepad, VS Code, dll), cari bagian <code>const firebaseConfig = {</code> dan tempel nilai-nilai tadi menggantikan teks <em>GANTI_DENGAN_...</em></li>
+    <li style="margin-bottom:8px">Simpan file → Buka kembali di browser → Selesai! ✅</li>
+  </ol>
+  <p style="margin-top:12px;padding:10px 14px;background:#e8f5ee;border-radius:8px;border:1px solid #b2d8bf;">
+    💡 <strong>Setelah dikonfigurasi, data dari semua komputer akan tersinkronisasi otomatis (real-time)</strong> — pegawai mengisi dari komputernya, admin langsung melihat hasilnya di komputer berbeda tanpa perlu refresh.
+  </p>
+  <p style="margin-top:8px; font-size:0.78rem; color:#7a6030;">
+    ⚠️ Mode "test mode" gratis dan cukup untuk penggunaan internal kantor. Firestore gratis hingga 50.000 baca/20.000 tulis per hari. Untuk keamanan jangka panjang, atur Firestore Rules setelah uji coba.
+  </p>
+</div>
+
 </body>
 </html>
