@@ -23877,9 +23877,27 @@ function saveAs(blob, filename) {
               <option value="Desember">Desember</option>
             </select>
             <select id="periodeAwalTahun" onchange="updatePeriodeDisplay()">
-              <option value="2025">2025</option>
               <option value="2026" selected>2026</option>
               <option value="2027">2027</option>
+              <option value="2028">2028</option>
+              <option value="2029">2029</option>
+              <option value="2030">2030</option>
+              <option value="2031">2031</option>
+              <option value="2032">2032</option>
+              <option value="2033">2033</option>
+              <option value="2034">2034</option>
+              <option value="2035">2035</option>
+              <option value="2036">2036</option>
+              <option value="2037">2037</option>
+              <option value="2038">2038</option>
+              <option value="2039">2039</option>
+              <option value="2040">2040</option>
+              <option value="2041">2041</option>
+              <option value="2042">2042</option>
+              <option value="2043">2043</option>
+              <option value="2044">2044</option>
+              <option value="2045">2045</option>
+              <option value="2046">2046</option>
             </select>
             <span>– 25</span>
             <select id="periodeAkhirBulan" onchange="updatePeriodeDisplay()">
@@ -23897,9 +23915,27 @@ function saveAs(blob, filename) {
               <option value="Desember">Desember</option>
             </select>
             <select id="periodeAkhirTahun" onchange="updatePeriodeDisplay()">
-              <option value="2025">2025</option>
               <option value="2026" selected>2026</option>
               <option value="2027">2027</option>
+              <option value="2028">2028</option>
+              <option value="2029">2029</option>
+              <option value="2030">2030</option>
+              <option value="2031">2031</option>
+              <option value="2032">2032</option>
+              <option value="2033">2033</option>
+              <option value="2034">2034</option>
+              <option value="2035">2035</option>
+              <option value="2036">2036</option>
+              <option value="2037">2037</option>
+              <option value="2038">2038</option>
+              <option value="2039">2039</option>
+              <option value="2040">2040</option>
+              <option value="2041">2041</option>
+              <option value="2042">2042</option>
+              <option value="2043">2043</option>
+              <option value="2044">2044</option>
+              <option value="2045">2045</option>
+              <option value="2046">2046</option>
             </select>
           </div>
         </div>
@@ -23979,9 +24015,27 @@ function saveAs(blob, filename) {
                 <option value="Desember">Desember</option>
               </select>
               <select id="tahunSurat">
-                <option value="2025">2025</option>
-                <option value="2026" selected>2026</option>
-                <option value="2027">2027</option>
+              <option value="2026" selected>2026</option>
+              <option value="2027">2027</option>
+              <option value="2028">2028</option>
+              <option value="2029">2029</option>
+              <option value="2030">2030</option>
+              <option value="2031">2031</option>
+              <option value="2032">2032</option>
+              <option value="2033">2033</option>
+              <option value="2034">2034</option>
+              <option value="2035">2035</option>
+              <option value="2036">2036</option>
+              <option value="2037">2037</option>
+              <option value="2038">2038</option>
+              <option value="2039">2039</option>
+              <option value="2040">2040</option>
+              <option value="2041">2041</option>
+              <option value="2042">2042</option>
+              <option value="2043">2043</option>
+              <option value="2044">2044</option>
+              <option value="2045">2045</option>
+              <option value="2046">2046</option>
               </select>
             </div>
           </div>
@@ -24250,7 +24304,7 @@ let rowCount = 0;
 
 const BULAN = ['Januari','Februari','Maret','April','Mei','Juni',
                'Juli','Agustus','September','Oktober','November','Desember'];
-const TAHUN = ['2025','2026','2027'];
+const TAHUN = Array.from({length: 21}, (_, i) => String(2026 + i)); // 2026–2046
 
 function bulanOptions(sel) {
   return BULAN.map((b,i) =>
