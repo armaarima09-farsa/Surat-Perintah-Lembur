@@ -24442,7 +24442,7 @@ function addRow() {
     </td>
     <td>
       <div style="display:flex;align-items:center;gap:4px">
-        <input type="text" inputmode="decimal" placeholder="cth: 10,5" style="width:75px" oninput="this.value=this.value.replace(/[^0-9.,]/g,'')">
+        <input type="text" inputmode="decimal" placeholder="cth: 1,5" style="width:75px" oninput="this.value=this.value.replace(/[^0-9.,]/g,'')">
         <span style="color:var(--text-soft);font-size:0.75rem">jam</span>
       </div>
     </td>
@@ -24453,7 +24453,7 @@ function addRow() {
         <input type="time" style="width:90px">
       </div>
     </td>
-    <td><input type="text" placeholder="Keterangan..." style="width:100%;min-width:150px"></td>
+    <td><input type="text" placeholder="Mengajar KP Non Reguler" style="width:100%;min-width:150px"></td>
     <td><button class="btn-del-row" onclick="delRow('row-${idx}')">✕</button></td>
   `;
   tbody.appendChild(tr);
