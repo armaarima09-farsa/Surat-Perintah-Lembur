@@ -24968,33 +24968,7 @@ function toast(msg, type = 'success') {
 }
 </script>
 
-<!-- ===== PANDUAN SETUP FIREBASE ===== -->
-<div id="firebaseSetupGuide" style="
-  max-width:860px; margin:32px auto; padding:28px 32px;
-  background:#fffbea; border:2px solid #e8d09a; border-radius:16px;
-  font-family:inherit; font-size:0.85rem; color:#5a4000; line-height:1.7;
-">
-  <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:12px;color:#7a5a00">
-    🔧 Panduan Setup Firebase (Baca sebelum digunakan!)
-  </h2>
-  <div id="firebaseErrorBox" style="display:none; background:#fdecea; border:1.5px solid #f5c6c6; border-radius:8px; padding:10px 14px; margin-bottom:14px; color:#c0392b; font-weight:600;"></div>
-  <p><strong>Langkah-langkah untuk mengaktifkan penyimpanan cloud:</strong></p>
-  <ol style="padding-left:20px; margin:12px 0;">
-    <li style="margin-bottom:8px">Buka <a href="https://console.firebase.google.com" target="_blank" style="color:#1a5c38;font-weight:600">console.firebase.google.com</a> → Login dengan akun Google</li>
-    <li style="margin-bottom:8px">Klik <strong>+ Add project</strong> → Beri nama (misal: <em>surat-lembur</em>) → Buat project</li>
-    <li style="margin-bottom:8px">Di sidebar kiri, klik <strong>Build → Firestore Database</strong> → Klik <strong>Create database</strong> → Pilih <strong>Start in test mode</strong> → Pilih lokasi server (pilih <em>asia-southeast1</em>) → Done</li>
-    <li style="margin-bottom:8px">Kembali ke halaman utama project → Klik ikon <strong>&lt;/&gt; (Web)</strong> untuk menambahkan aplikasi web → Isi nama app → Klik <strong>Register app</strong></li>
-    <li style="margin-bottom:8px">Salin nilai <code>apiKey</code>, <code>authDomain</code>, <code>projectId</code>, <code>storageBucket</code>, <code>messagingSenderId</code>, <code>appId</code> dari konfigurasi yang ditampilkan</li>
-    <li style="margin-bottom:8px">Buka file <strong>index.html</strong> ini di editor teks (Notepad, VS Code, dll), cari bagian <code>const firebaseConfig = {</code> dan tempel nilai-nilai tadi menggantikan teks <em>GANTI_DENGAN_...</em></li>
-    <li style="margin-bottom:8px">Simpan file → Buka kembali di browser → Selesai! ✅</li>
-  </ol>
-  <p style="margin-top:12px;padding:10px 14px;background:#e8f5ee;border-radius:8px;border:1px solid #b2d8bf;">
-    💡 <strong>Setelah dikonfigurasi, data dari semua komputer akan tersinkronisasi otomatis (real-time)</strong> — pegawai mengisi dari komputernya, admin langsung melihat hasilnya di komputer berbeda tanpa perlu refresh.
-  </p>
-  <p style="margin-top:8px; font-size:0.78rem; color:#7a6030;">
-    ⚠️ Mode "test mode" gratis dan cukup untuk penggunaan internal kantor. Firestore gratis hingga 50.000 baca/20.000 tulis per hari. Untuk keamanan jangka panjang, atur Firestore Rules setelah uji coba.
-  </p>
-</div>
+<div id="firebaseErrorBox" style="display:none; max-width:860px; margin:16px auto; background:#fdecea; border:1.5px solid #f5c6c6; border-radius:8px; padding:10px 14px; color:#c0392b; font-weight:600;"></div>
 
 </body>
 </html>
