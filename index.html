@@ -24966,33 +24966,21 @@ function toast(msg, type = 'success') {
   tc.appendChild(t);
   setTimeout(() => t.remove(), 3800);
 }
+
+const databasePegawai = {'101': 'SENO ARIEF BUDIMAN', '144': 'RENI SUSANTI', '155': 'FARSA SEPTIA ADI NUGROHO', '225': 'AMALIA PURWATININGRUM', '266': 'NUR SISWADI', '287': 'ANTON', '366': 'MUSLIM PRIYATNA', '381': 'M ASEP MAULANA YUSUF', '432': 'MUHAMAD WAHYU RIDLO', '487': 'M INDRA SAKTI JAYA', '931': 'ANUGRAH RYAN AENDY', '970': 'AFRIYANTI', '975': 'DIANA NUR HAYATI', '1028': 'SAADAH', '1329': 'MUHAMMAD HILAL', '1357': 'ARRIZALDY TUFLIYADDO', '1611': 'ANNISA NURRAHMI SYABRINA P', '1655': 'M HADRI NOOR', '1667': 'RAMADHAN RUDOLF PARTOGI', '1670': 'DEVI HENDRIYANA', '1688': 'NABILA FEBRIANI PUTRI', '1692': 'RANI WAHYUNINGSIH', '1756': 'EVA HIDAYATURROHMAH', '1765': 'ANIS MUTIARA', '1930': 'NURULFIDA LIDINILLAH A', '1933': 'KUNIFAH NADIYAH', '1936': 'ANGGRAENI P B', '2204': 'DEWI LARASATI', '59': 'AHMAD KHUAILID', '175': 'ANIFAH PUTRI LESTARI', '212': 'VICKY OKTRIVIANI', '247': 'NOVITA SARI', '336': 'EKA AYU WIDIASTUTI', '375': 'MUHAMMAD RIDWAN', '395': 'MUHAMMAD THUFEIL', '446': 'BAYU PRASETYO', '649': 'WIDIYANTO', '718': 'FITRI MARETA', '823': 'FARIZ HILMAN ADLY', '927': 'HENDRIANA', '951': 'SITI AMINAH', '1006': 'DWI PUSPITA SARI', '1051': 'CERY CHINTIA', '1134': 'FITHRIYYAH RIZQIKA', '1140': 'DWI DHINI OKTAVIANI', '1157': 'LINDA WENI', '1201': 'SAYYIDAH KHOERUNNISA', '1267': 'DENHAR GENTAYU P', '1289': 'ENENG ZULFA ISNAENI', '1434': 'ATOPANDRI', '1452': 'TIINI MUJAHIDAH ASHODIQ', '1455': 'YUSUP KOMARUDIN', '1473': 'AKMAL FIRMANSYAH', '1500': 'SHEILLA SAFITRI', '1509': 'MIFTAHUDIN', '1660': 'YONATAN NALLE', '1829': 'PUNGKY FAJAR ADI V', '1932': 'RUDI SATYA H', '2106': 'ASSIFA ATSNA HANIFA'};
+
+function isiNamaOtomatis(elNid) {
+    const baris = elNid.closest('tr');
+    const inputNama = baris.cells[1].querySelector('input');
+    const nilaiNid = elNid.value.trim();
+
+    if (databasePegawai[nilaiNid]) {
+        inputNama.value = databasePegawai[nilaiNid];
+    }
+}
 </script>
 
 <div id="firebaseErrorBox" style="display:none; max-width:860px; margin:16px auto; background:#fdecea; border:1.5px solid #f5c6c6; border-radius:8px; padding:10px 14px; color:#c0392b; font-weight:600;"></div>
 
-
-<script>
-const employeeData = {'101': 'SENO ARIEF BUDIMAN', '144': 'RENI SUSANTI', '155': 'FARSA SEPTIA ADI NUGROHO', '225': 'AMALIA PURWATININGRUM', '266': 'NUR SISWADI', '287': 'ANTON', '366': 'MUSLIM PRIYATNA', '381': 'M ASEP MAULANA YUSUF', '432': 'MUHAMAD WAHYU RIDLO', '487': 'M INDRA SAKTI JAYA', '931': 'ANUGRAH RYAN AENDY', '970': 'AFRIYANTI', '975': 'DIANA NUR HAYATI', '1028': 'SAADAH', '1329': 'MUHAMMAD HILAL', '1357': 'ARRIZALDY TUFLIYADDO', '1611': 'ANNISA NURRAHMI SYABRINA P', '1655': 'M HADRI NOOR', '1667': 'RAMADHAN RUDOLF PARTOGI', '1670': 'DEVI HENDRIYANA', '1688': 'NABILA FEBRIANI PUTRI', '1692': 'RANI WAHYUNINGSIH', '1756': 'EVA HIDAYATURROHMAH', '1765': 'ANIS MUTIARA', '1930': 'NURULFIDA LIDINILLAH A', '1933': 'KUNIFAH NADIYAH', '1936': 'ANGGRAENI P B', '2204': 'DEWI LARASATI', '59': 'AHMAD KHUAILID', '175': 'ANIFAH PUTRI LESTARI', '212': 'VICKY OKTRIVIANI', '247': 'NOVITA SARI', '336': 'EKA AYU WIDIASTUTI', '375': 'MUHAMMAD RIDWAN', '395': 'MUHAMMAD THUFEIL', '446': 'BAYU PRASETYO', '649': 'WIDIYANTO', '718': 'FITRI MARETA', '823': 'FARIZ HILMAN ADLY', '927': 'HENDRIANA', '951': 'SITI AMINAH', '1006': 'DWI PUSPITA SARI', '1051': 'CERY CHINTIA', '1134': 'FITHRIYYAH RIZQIKA', '1140': 'DWI DHINI OKTAVIANI', '1157': 'LINDA WENI', '1201': 'SAYYIDAH KHOERUNNISA', '1267': 'DENHAR GENTAYU P', '1289': 'ENENG ZULFA ISNAENI', '1434': 'ATOPANDRI', '1452': 'TIINI MUJAHIDAH ASHODIQ', '1455': 'YUSUP KOMARUDIN', '1473': 'AKMAL FIRMANSYAH', '1500': 'SHEILLA SAFITRI', '1509': 'MIFTAHUDIN', '1660': 'YONATAN NALLE', '1829': 'PUNGKY FAJAR ADI V', '1932': 'RUDI SATYA H', '2106': 'ASSIFA ATSNA HANIFA'};
-
-function autofillNamaByNID(inputNid) {
-    const nid = inputNid.value.trim();
-    // Find the row or the closest container that has the Nama field
-    // In many forms, they are in the same parent or nearby.
-    // Based on index_spl(new).html snippets, it seems to be a table or a list of inputs.
-    const row = inputNid.closest('tr') || inputNid.parentElement.parentElement;
-    const namaInput = row.querySelector('input[name*="nama"], .input-nama, #nama');
-    
-    if (employeeData[nid]) {
-        if (namaInput) namaInput.value = employeeData[nid];
-    }
-}
-
-// Standardizing the input listener
-document.addEventListener('input', function(e) {
-    if (e.target && e.target.placeholder && e.target.placeholder.toLowerCase().includes('nid')) {
-        autofillNamaByNID(e.target);
-    }
-});
-</script>
 </body>
 </html>
